@@ -1,0 +1,115 @@
+{
+  "name": "dafo-chat-bridge",
+  "displayName": "DAFO Chat Bridge",
+  "description": "Move conversations between GitHub Copilot Chat, Claude Code and OpenAI Codex.",
+  "publisher": "dafo",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": ["AI", "Chat"],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        { "id": "chatBridge", "title": "DAFO Chat Bridge", "icon": "media/icon.svg" }
+      ]
+    },
+    "views": {
+      "chatBridge": [
+        { "id": "chatBridge.sessions", "name": "Conversaciones" }
+      ]
+    },
+    "commands": [
+      { "command": "chatBridge.refresh", "title": "Actualizar", "category": "Chat Bridge", "icon": "$(refresh)" },
+      { "command": "chatBridge.toggleScope", "title": "Alternar: solo este workspace / todos", "category": "Chat Bridge", "icon": "$(filter)" },
+      { "command": "chatBridge.send", "title": "Pasar una conversación a…", "category": "Chat Bridge", "icon": "$(arrow-swap)" },
+      { "command": "chatBridge.sendLatest", "title": "Pasar la última conversación de Claude / Codex / Copilot a…", "category": "Chat Bridge", "icon": "$(history)" },
+      { "command": "chatBridge.showMarkdown", "title": "Ver como Markdown", "category": "Chat Bridge", "icon": "$(markdown)" },
+      { "command": "chatBridge.openResult", "title": "Abrir conversación migrada", "category": "Chat Bridge" }
+    ],
+    "menus": {
+      "view/title": [
+        { "command": "chatBridge.sendLatest", "when": "view == chatBridge.sessions", "group": "navigation@1" },
+        { "command": "chatBridge.toggleScope", "when": "view == chatBridge.sessions", "group": "navigation@2" },
+        { "command": "chatBridge.refresh", "when": "view == chatBridge.sessions", "group": "navigation@3" }
+      ],
+      "view/item/context": [
+        { "command": "chatBridge.send", "when": "view == chatBridge.sessions && viewItem =~ /^session-/", "group": "inline@1" },
+        { "command": "chatBridge.showMarkdown", "when": "view == chatBridge.sessions && viewItem =~ /^session-/", "group": "inline@2" },
+        { "command": "chatBridge.send", "when": "view == chatBridge.sessions && viewItem =~ /^session-/", "group": "1_bridge@1" },
+        { "command": "chatBridge.showMarkdown", "when": "view == chatBridge.sessions && viewItem =~ /^session-/", "group": "1_bridge@2" }
+      ],
+      "commandPalette": [
+        { "command": "chatBridge.showMarkdown", "when": "false" },
+        { "command": "chatBridge.openResult", "when": "false" }
+      ]
+    },
+    "chatParticipants": [
+      {
+        "id": "chatBridge.bridge",
+        "name": "bridge",
+        "fullName": "DAFO Chat Bridge",
+        "description": "Pasa esta conversación a Claude Code, Codex o Markdown",
+        "isSticky": false,
+        "commands": [
+          { "name": "claude", "description": "Continuar esta conversación en Claude Code" },
+          { "name": "codex", "description": "Continuar esta conversación en Codex" },
+          { "name": "markdown", "description": "Exportar esta conversación a Markdown" }
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "DAFO Chat Bridge",
+      "properties": {
+        "chatBridge.python": {
+          "type": "string",
+          "default": "",
+          "description": "Intérprete de Python 3 para el CLI incluido. Vacío = `python3` (`python` en Windows)."
+        },
+        "chatBridge.toolOutput": {
+          "type": "string",
+          "default": "500",
+          "markdownDescription": "Salida de herramientas al migrar: número de caracteres por herramienta, `full` (completa), `0` (solo comandos) o `none` (sin herramientas)."
+        },
+        "chatBridge.lastTurns": {
+          "type": "number",
+          "default": 0,
+          "description": "Migrar solo los últimos N turnos (0 = todos)."
+        },
+        "chatBridge.onlyCurrentWorkspace": {
+          "type": "boolean",
+          "default": true,
+          "description": "Mostrar solo conversaciones de las carpetas de este workspace."
+        },
+        "chatBridge.targetCwd": {
+          "type": "string",
+          "enum": ["workspace", "source"],
+          "default": "workspace",
+          "enumDescriptions": [
+            "La conversación migrada queda en la carpeta del workspace actual (aparece en los paneles de esta ventana).",
+            "Conserva el directorio de trabajo de la conversación original."
+          ],
+          "description": "Directorio de trabajo de la conversación migrada en Claude Code / Codex."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "bundle-python": "rm -rf python && mkdir python && cp -R ../chat_bridge python/ && cp ../chat-bridge python/ && find python -name __pycache__ -prune -exec rm -rf {} +",
+    "compile": "tsc -p .",
+    "package": "npm run bundle-python && npm run compile && vsce package --no-dependencies --allow-missing-repository --skip-license -o dafo-chat-bridge.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "~1.100.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.6.0"
+  }
+}

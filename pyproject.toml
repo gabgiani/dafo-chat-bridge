@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dafo-chat-bridge"
+dynamic = ["version"]
+description = "Move conversations between GitHub Copilot Chat (VS Code), Claude Code and OpenAI Codex."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+chat-bridge = "chat_bridge.cli:main"
+
+[tool.setuptools]
+packages = ["chat_bridge"]
+
+[tool.setuptools.dynamic]
+version = { attr = "chat_bridge.__version__" }
