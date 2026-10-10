@@ -6,4 +6,4 @@ Move a conversation between **GitHub Copilot Chat**, **Claude Code** and **OpenA
 - **`@bridge` in Copilot Chat.** `@bridge /claude`, `@bridge /codex` and `@bridge /markdown` move the **current conversation**.
 - **Status bar.** The **⇄ Bridge** button starts the same flow from anywhere.
 
-Requires Python 3.9+. Full documentation is in the project README.
+Requires Python 3.9+. Full documentation, CLI and source: [github.com/gabgiani/dafo-chat-bridge](https://github.com/gabgiani/dafo-chat-bridge). MIT License.

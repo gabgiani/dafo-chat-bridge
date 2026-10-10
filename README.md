@@ -40,22 +40,32 @@ Each migrated conversation becomes a **new session** in the destination. It show
 
 ## Quick start
 
-Requirements: **Python 3.9+**. To build the extension you also need **Node.js 18+**. At least one of the agents must be installed.
+Requirements: **VS Code 1.100+**, **Python 3.9+** (the extension runs the bundled CLI with it) and at least one of the agents installed.
+
+### Install the extension
+
+- **From the release:** download [dafo-chat-bridge.vsix](https://github.com/gabgiani/dafo-chat-bridge/releases/latest/download/dafo-chat-bridge.vsix) and run `code --install-extension dafo-chat-bridge.vsix`, or in VS Code open **Extensions → ⋯ → Install from VSIX…**.
+- **From the Visual Studio Marketplace:** search for **DAFO Chat Bridge** in the Extensions view (once published).
+
+Then open the **DAFO Chat Bridge** icon in the activity bar, or type `@bridge /claude` in a Copilot chat.
+
+### Optional: the CLI on your PATH
+
+```bash
+pipx install git+https://github.com/gabgiani/dafo-chat-bridge.git   # or: pip install --user …
+chat-bridge list
+```
+
+### Build from source
+
+You also need **Node.js 18+**.
 
 ```bash
 git clone https://github.com/gabgiani/dafo-chat-bridge.git
-cd dafo-chat-bridge
-
-# VS Code extension (includes the CLI)
-cd vscode-extension
+cd dafo-chat-bridge/vscode-extension
 npm install
 npm run package                      # -> dafo-chat-bridge.vsix
 code --install-extension dafo-chat-bridge.vsix
-
-# Optional: the CLI on your PATH
-cd ..
-pipx install .                       # or: pip install --user .   (or run ./chat-bridge directly)
-chat-bridge list
 ```
 
 ## Using the VS Code extension
@@ -267,4 +277,4 @@ dafo-chat-bridge/
 
 ---
 
-© DAFO. All rights reserved. No open-source license has been chosen yet.
+© 2026 Gabriel Giani Moreno (DAFO). Released under the [MIT License](LICENSE).

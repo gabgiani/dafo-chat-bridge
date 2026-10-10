@@ -8,6 +8,7 @@ dynamic = ["version"]
 description = "Move conversations between GitHub Copilot Chat (VS Code), Claude Code and OpenAI Codex."
 readme = "README.md"
 requires-python = ">=3.9"
+license = { text = "MIT" }
 dependencies = []
 
 [project.scripts]

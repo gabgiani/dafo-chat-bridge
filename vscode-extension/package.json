@@ -5,7 +5,16 @@
   "publisher": "dafo",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gabgiani/dafo-chat-bridge"
+  },
+  "bugs": {
+    "url": "https://github.com/gabgiani/dafo-chat-bridge/issues"
+  },
+  "homepage": "https://github.com/gabgiani/dafo-chat-bridge#readme",
+  "keywords": ["copilot", "claude code", "codex", "chat history", "migrate"],
   "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.100.0"
@@ -102,9 +111,9 @@
     }
   },
   "scripts": {
-    "bundle-python": "rm -rf python && mkdir python && cp -R ../chat_bridge python/ && cp ../chat-bridge python/ && find python -name __pycache__ -prune -exec rm -rf {} +",
+    "bundle-python": "rm -rf python && mkdir python && cp -R ../chat_bridge python/ && cp ../chat-bridge python/ && cp ../LICENSE LICENSE && find python -name __pycache__ -prune -exec rm -rf {} +",
     "compile": "tsc -p .",
-    "package": "npm run bundle-python && npm run compile && vsce package --no-dependencies --allow-missing-repository --skip-license -o dafo-chat-bridge.vsix"
+    "package": "npm run bundle-python && npm run compile && vsce package --no-dependencies -o dafo-chat-bridge.vsix"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

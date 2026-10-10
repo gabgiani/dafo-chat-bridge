@@ -9,3 +9,4 @@ vscode-extension/node_modules/
 vscode-extension/out/
 vscode-extension/python/
 vscode-extension/*.vsix
+vscode-extension/LICENSE
