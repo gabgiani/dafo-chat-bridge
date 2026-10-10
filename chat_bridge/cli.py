@@ -28,13 +28,22 @@ def slug(text: str) -> str:
     return re.sub(r'[^a-zA-Z0-9]+', '-', text).strip('-')[:60] or 'chat'
 
 
+def in_dir(cwd, folder: str) -> bool:
+    if not cwd:
+        return False
+    cwd, folder = os.path.realpath(cwd), os.path.realpath(folder)
+    if cwd == folder or cwd.startswith(folder + os.sep):
+        return True
+    # project moved: the recorded directory no longer exists but has the same folder name
+    return not os.path.exists(cwd) and os.path.basename(cwd) == os.path.basename(folder)
+
+
 def cmd_list(args):
     rows = []
     for name in ([args.source] if args.source else SOURCES):
         rows += SOURCES[name].list_sessions()
     if args.cwd:
-        cwd = os.path.realpath(args.cwd)
-        rows = [r for r in rows if r['cwd'] and os.path.realpath(r['cwd']) == cwd]
+        rows = [r for r in rows if in_dir(r['cwd'], args.cwd)]
     if args.search:
         needle = args.search.lower()
         rows = [r for r in rows if needle in (r['title'] or '').lower() or needle in (r['cwd'] or '').lower()]
@@ -106,7 +115,7 @@ def main(argv=None):
 
     p = sub.add_parser('list', help='lista sesiones')
     p.add_argument('--source', choices=SOURCES)
-    p.add_argument('--cwd', help='solo sesiones de este directorio')
+    p.add_argument('--cwd', help='solo sesiones de este directorio (incluye subcarpetas y proyectos movidos con el mismo nombre)')
     p.add_argument('--search', help='filtra por texto en título o directorio')
     p.add_argument('--limit', type=int, default=40)
     p.add_argument('--json', action='store_true')

@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { execFile } from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
 
 type Source = 'copilot' | 'claude' | 'codex';
@@ -123,8 +124,15 @@ function relativeTime(ms: number): string {
 }
 
 function inWorkspace(cwd: string | null): boolean {
-  const folders = vscode.workspace.workspaceFolders ?? [];
-  return !!cwd && folders.some(f => cwd === f.uri.fsPath || cwd.startsWith(f.uri.fsPath + path.sep));
+  const folders = (vscode.workspace.workspaceFolders ?? []).map(f => f.uri.fsPath);
+  if (!cwd) {
+    return false;
+  }
+  if (folders.some(f => cwd === f || cwd.startsWith(f + path.sep))) {
+    return true;
+  }
+  // project moved: the recorded directory no longer exists but has the name of a workspace folder
+  return !fs.existsSync(cwd) && folders.some(f => path.basename(f) === path.basename(cwd));
 }
 
 class GroupItem extends vscode.TreeItem {
@@ -140,8 +148,9 @@ class SessionItem extends vscode.TreeItem {
   constructor(readonly session: SessionMeta) {
     super(session.title, vscode.TreeItemCollapsibleState.None);
     this.description = `${relativeTime(session.updated)} · ${(session.size / 1e6).toFixed(1)} MB`;
+    const moved = session.cwd && !fs.existsSync(session.cwd) ? '\n\n_Ruta original (ya no existe):_' : '';
     this.tooltip = new vscode.MarkdownString(
-      `**${session.title}**\n\n${LABEL[session.source]} \`${session.id}\`\n\n${session.cwd ?? ''}`);
+      `**${session.title}**\n\n${LABEL[session.source]} \`${session.id}\`${moved}\n\n${session.cwd ?? ''}`);
     this.iconPath = new vscode.ThemeIcon(ICON[session.source]);
     this.contextValue = `session-${session.source}`;
     this.command = { command: 'chatBridge.showMarkdown', title: 'Ver como Markdown', arguments: [this] };
@@ -206,10 +215,11 @@ function sessionRef(session: SessionMeta): string {
   return session.source === 'copilot' ? session.path : session.id;
 }
 
-async function transfer(session: SessionMeta, target: Target): Promise<void> {
+async function transfer(session: SessionMeta, target: Target, provider: SessionsProvider): Promise<void> {
   const result = await vscode.window.withProgress(
     { location: vscode.ProgressLocation.Notification, title: `Pasando “${session.title}” a ${LABEL[target]}…`, cancellable: true },
     (_progress, token) => exportSession(session.source, sessionRef(session), target, undefined, token));
+  provider.refresh();
   await openResult(result);
   vscode.window.showInformationMessage(`${result.turns} turnos pasaron a ${LABEL[target]}.`);
 }
@@ -274,6 +284,7 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     tree, statusBar, participant,
     tree.onDidChangeVisibility(e => e.visible && provider.refresh()),
+    vscode.window.onDidChangeWindowState(e => e.focused && tree.visible && provider.refresh()),
     vscode.workspace.onDidChangeConfiguration(e => e.affectsConfiguration('chatBridge') && provider.refresh()),
     vscode.commands.registerCommand('chatBridge.refresh', () => provider.refresh()),
     vscode.commands.registerCommand('chatBridge.toggleScope', guarded(async () => {
@@ -283,7 +294,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const session = item?.session ?? await pickSession(provider);
       const target = session && await pickTarget(session);
       if (session && target) {
-        await transfer(session, target);
+        await transfer(session, target, provider);
       }
     })),
     vscode.commands.registerCommand('chatBridge.sendLatest', guarded(async () => {
@@ -299,7 +310,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       const target = await pickTarget(latest);
       if (target) {
-        await transfer(latest, target);
+        await transfer(latest, target, provider);
       }
     })),
     vscode.commands.registerCommand('chatBridge.showMarkdown', guarded(async (item: SessionItem) => {
